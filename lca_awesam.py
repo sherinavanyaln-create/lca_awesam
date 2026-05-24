@@ -289,11 +289,11 @@ with tab1:
     with col_in:
         st.markdown('<div class="panel"><div class="panel-title">▼ Input flows</div>', unsafe_allow_html=True)
         df_in = pd.DataFrame([
-            {"Flow": "Kain Katun",            "Category": "Awesam",   "Amount": kain,    "Unit": "kg"},
-            {"Flow": "Benang Jahit",           "Category": "Awesam",   "Amount": benang,  "Unit": "kg"},
-            {"Flow": "Listrik",                "Category": "Awesam",   "Amount": listrik, "Unit": "kWh"},
-            {"Flow": "Packaging film, LDPE",   "Category": "BAFU-RER", "Amount": ldpe,    "Unit": "kg"},
-            {"Flow": "Paper, woodfree coated", "Category": "BAFU-RER", "Amount": paper,   "Unit": "kg"},
+            {"Flow": "Kain Katun", "Amount": kain,    "Unit": "kg"},
+            {"Flow": "Benang Jahit", "Amount": benang,  "Unit": "kg"},
+            {"Flow": "Listrik", "Amount": listrik, "Unit": "kWh"},
+            {"Flow": "Packaging film, LDPE", "Amount": ldpe,    "Unit": "kg"},
+            {"Flow": "Paper, woodfree coated", "Amount": paper,   "Unit": "kg"},
         ])
         st.dataframe(df_in, use_container_width=True, hide_index=True,
                      column_config={"Amount": st.column_config.NumberColumn(format="%.2f")})
@@ -302,9 +302,9 @@ with tab1:
     with col_out:
         st.markdown('<div class="panel"><div class="panel-title">▼ Output flows</div>', unsafe_allow_html=True)
         df_out = pd.DataFrame([
-            {"Flow": "Kaos Jadi",            "Category": "Awesam", "Amount": float(kaos),  "Unit": "item(s)"},
-            {"Flow": "Kain Perca",            "Category": "Awesam", "Amount": perca,         "Unit": "kg"},
-            {"Flow": "Carbon dioxide, fossil","Category": "Awesam", "Amount": co2_in,        "Unit": "kg"},
+            {"Flow": "Kaos Jadi", "Amount": float(kaos),  "Unit": "item(s)"},
+            {"Flow": "Kain Perca", "Amount": perca,         "Unit": "kg"},
+            {"Flow": "Carbon dioxide, fossil", "Amount": co2_in,        "Unit": "kg"},
         ])
         st.dataframe(df_out, use_container_width=True, hide_index=True,
                      column_config={"Amount": st.column_config.NumberColumn(format="%.2f")})
