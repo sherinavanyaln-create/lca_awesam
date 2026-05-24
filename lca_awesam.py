@@ -71,7 +71,7 @@ section[data-testid="stSidebar"] { background: #f1f3f4; }
 </style>
 """, unsafe_allow_html=True)
 
-# ─── FAKTOR KARAKTERISASI (dari database BAFU openLCA 2.6.1) ─────────────────
+# FAKTOR KARAKTERISASI  
 # Global Warming: reverse-engineered dari contribution tree openLCA
 F_GW = {
     "co2_direct": 1.0,           # kg CO2 eq / kg CO2 (emisi langsung)
@@ -79,13 +79,13 @@ F_GW = {
     "paper":      0.63383 / 0.6, # kg CO2 eq / kg paper = 1.05638
 }
 
-# Fine Particulate Matter: dari contribution tree openLCA (SS kamu)
+# Fine Particulate Matter
 F_FPM = {
     "ldpe":  0.00225 / 1.5,  # kg PM2.5 eq / kg LDPE  = 0.00150
     "paper": 0.00101 / 0.6,  # kg PM2.5 eq / kg paper = 0.001683
 }
 
-# Fossil Resource Scarcity: dominan dari LDPE (plastik berbasis fosil)
+# Fossil Resource Scarcity: dominan dari LDPE 
 # Dari hasil openLCA 2.83815 kg oil eq dengan LDPE 1.5 kg → estimasi faktor
 F_FRS = {
     "ldpe":  2.83815 * 0.85 / 1.5,  # ~80-85% dari FRS berasal dari LDPE
@@ -180,7 +180,7 @@ F_WC = {
 }
 
 
-# ─── FUNGSI PERHITUNGAN ───────────────────────────────────────────────────────
+# FUNGSI PERHITUNGAN 
 def hitung_lca(co2, ldpe, paper, listrik, kain, benang, kaos, perca):
     """
     Langkah 10: GW = CO2_direct + (LDPE x F_LDPE_GW) + (Paper x F_PAPER_GW)
@@ -242,7 +242,7 @@ def hitung_lca(co2, ldpe, paper, listrik, kain, benang, kaos, perca):
 # SIDEBAR 
 with st.sidebar:
     st.markdown("### 🌿 Mini openLCA")
-    st.markdown("**Awesam_LCA** · ReCiPe 2016 Midpoint (H)")
+    st.markdown("**Awesam** · Kelompok 4")
     st.divider()
 
     st.markdown('<p class="sidebar-header">📦 Input flows</p>', unsafe_allow_html=True)
@@ -258,24 +258,17 @@ with st.sidebar:
     co2_in  = st.number_input("Emisi CO₂ Direct (kg)",  step=0.1,  format="%.1f")
     perca   = st.number_input("Kain Perca / Waste (kg)",   step=0.1,  format="%.1f")
 
-    st.divider()
-    st.markdown("""
-    <div style="font-size:11px;color:#888;margin-top:4px">
-    Database: BAFU · openLCA 2.6.1<br>
-    Metode: ReCiPe 2016 Midpoint (H)<br>
-    Batas sistem: Gate-to-gate<br>
-    </div>""", unsafe_allow_html=True)
 
 
 # HITUNG 
 results, contrib, gw_total = hitung_lca(co2_in, ldpe, paper, listrik, kain, benang, kaos, perca)
 
 
-# ─── HEADER ──────────────────────────────────────────────────────────────────
+# HEADER 
 st.markdown("""
 <div class="main-header">
-  <h2>🌿 Proses Produksi Kaos Awesam — Life Cycle Assessment</h2>
-  <p>openLCA LCIA Categories 2.8.0 · ReCiPe 2016 Midpoint (H) · Gate-to-gate · Tanjungrejo, Kota Malang</p>
+  <h1>🌿 Proses Produksi Kaos Awesam </h1>
+  <p>Tanjungrejo, Kota Malang</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -288,9 +281,8 @@ tab1, tab2, tab3, tab4 = st.tabs([
 ])
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+
 # TAB 1 — INPUTS / OUTPUTS
-# ═══════════════════════════════════════════════════════════════════════════
 with tab1:
     col_in, col_out = st.columns(2)
 
@@ -330,11 +322,7 @@ with tab1:
     c3.metric("Efisiensi material",  f"{efisiensi:.1f}%")
     c4.metric("CO₂ per unit kaos",   f"{co2_per_unit:.4f} kg/unit")
 
-
-
-# ═══════════════════════════════════════════════════════════════════════════
 # TAB 2 — IMPACT ANALYSIS
-# ═══════════════════════════════════════════════════════════════════════════
 with tab2:
     frs_val  = next(r for r in results if r["name"] == "Fossil resource scarcity")["val"]
     lu_val   = next(r for r in results if r["name"] == "Land use")["val"]
@@ -347,7 +335,7 @@ with tab2:
     c4.metric("💨 Fine Particulate Matter",  f"{fpm_val:.5f}",   "kg PM2.5 eq")
 
     st.divider()
-    st.markdown("**Impact analysis — ReCiPe 2016 Midpoint (H)**")
+    st.markdown("**Impact analysis**")
 
     def fmt(v):
         if abs(v) < 1e-6: return "{:.4e}".format(v)
@@ -385,18 +373,11 @@ with tab2:
     </table>
     """.format(rows_html), unsafe_allow_html=True)
 
-    st.markdown("""
-    <div class="note-box">
-    ℹ️ Semua nilai dihitung langsung dari input inventori menggunakan faktor karakterisasi
-    ReCiPe 2016 Midpoint (H) dari database BAFU.
-    </div>""", unsafe_allow_html=True)
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # TAB 3 — CONTRIBUTION TREE
-# ═══════════════════════════════════════════════════════════════════════════
 with tab3:
-    st.markdown("**Contribution tree — Global Warming**")
+    st.markdown("**Contribution tree - Global Warming**")
     st.selectbox("Impact category", ["Global warming"], key="ct_cat")
 
     bar_segs = "".join([
@@ -420,7 +401,6 @@ with tab3:
     </div>
     """.format(gw=gw_total, bar=bar_segs, legend=legend_items), unsafe_allow_html=True)
 
-    # Tabel detail
     rows = [
         {"Kontribusi": "100.00%",
          "Process": "▼ Proses Produksi Kaos Awesam",
@@ -443,18 +423,7 @@ with tab3:
 
     st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
-    st.markdown("""
-    <div class="note-box">
-    ℹ️ Faktor karakterisasi Global Warming:
-    CO₂ direct = 1.0 kg CO₂ eq/kg ·
-    LDPE = {f_ldpe:.5f} kg CO₂ eq/kg ·
-    Paper = {f_paper:.5f} kg CO₂ eq/kg
-    </div>""".format(f_ldpe=F_GW["ldpe"], f_paper=F_GW["paper"]), unsafe_allow_html=True)
-
-
-# ═══════════════════════════════════════════════════════════════════════════
 # TAB 4 — GRAFIK
-# ═══════════════════════════════════════════════════════════════════════════
 with tab4:
     col_g1, col_g2 = st.columns(2)
 
