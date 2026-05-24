@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 import pandas as pd
 
 st.set_page_config(
-    page_title="Mini openLCA – Awesam Malang",
+    page_title="Mini openLCA Awesam Malang",
     page_icon="🌿",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -239,7 +239,7 @@ def hitung_lca(co2, ldpe, paper, listrik, kain, benang, kaos, perca):
     return results, contrib, gw
 
 
-# ─── SIDEBAR ─────────────────────────────────────────────────────────────────
+# SIDEBAR 
 with st.sidebar:
     st.markdown("### 🌿 Mini openLCA")
     st.markdown("**Awesam_LCA** · ReCiPe 2016 Midpoint (H)")
@@ -267,17 +267,17 @@ with st.sidebar:
     </div>""", unsafe_allow_html=True)
 
 
-# ─── HITUNG (langsung, tanpa tombol) ─────────────────────────────────────────
+# HITUNG 
 results, contrib, gw_total = hitung_lca(co2_in, ldpe, paper, listrik, kain, benang, kaos, perca)
 
 
-# ─── HEADER ──────────────────────────────────────────────────────────────────
+# HEADER
 st.markdown("""
 <div class="main-header">
-  <h2>🌿 Proses Produksi Kaos Awesam — Life Cycle Assessment</h2>
-  <p>openLCA LCIA Categories 2.8.0 · ReCiPe 2016 Midpoint (H) · Gate-to-gate · Tanjungrejo, Kota Malang</p>
+  <h2>🌿 Proses Produksi Kaos Awesam</h2>
+  <p>Life Cycle Assessment</p>
 </div>
-""", unsafe_allow_html=True)
+""", unsafe_allow_html=False)
 
 
 tab1, tab2, tab3, tab4 = st.tabs([
