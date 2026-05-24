@@ -267,8 +267,8 @@ results, contrib, gw_total = hitung_lca(co2_in, ldpe, paper, listrik, kain, bena
 # HEADER 
 st.markdown("""
 <div class="main-header">
-  <h1>🌿 Proses Produksi Kaos Awesam </h1>
-  <p>Tanjungrejo, Kota Malang</p>
+  <h1>🌿 Proses Produksi Kaos </h1>
+  <p>Awesam, Tanjungrejo, Kota Malang</p>
 </div>
 """, unsafe_allow_html=True)
 
