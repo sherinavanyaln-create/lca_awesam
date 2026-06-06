@@ -71,34 +71,43 @@ section[data-testid="stSidebar"] { background: #f1f3f4; }
 </style>
 """, unsafe_allow_html=True)
 
-# FAKTOR KARAKTERISASI  
-# Global Warming: reverse-engineered dari contribution tree openLCA
+# ─── FAKTOR KARAKTERISASI ────────────────────────────────────────────────────
+
+F_EMISI_LISTRIK = 0.80  # kg CO₂ eq / kWh (Faktor Emisi Listrik Indonesia)
+
+# Global Warming
+# - Listrik: dihitung dari faktor emisi PLN Indonesia
+# - LDPE & Paper: reverse-engineered dari contribution tree openLCA 2.6.1
 F_GW = {
-    "co2_direct": 1.0,           # kg CO2 eq / kg CO2 (emisi langsung)
-    "ldpe":       4.35668 / 1.5, # kg CO2 eq / kg LDPE  = 2.90445
-    "paper":      0.63383 / 0.6, # kg CO2 eq / kg paper = 1.05638
+    "listrik": F_EMISI_LISTRIK,   # kg CO₂ eq / kWh
+    "ldpe":    4.35668 / 1.5,     # kg CO₂ eq / kg LDPE  = 2.90445
+    "paper":   0.63383 / 0.6,     # kg CO₂ eq / kg paper = 1.05638
 }
 
-# Fine Particulate Matter
+# Fine Particulate Matter — dari contribution tree openLCA (eksak)
 F_FPM = {
-    "ldpe":  0.00225 / 1.5,  # kg PM2.5 eq / kg LDPE  = 0.00150
-    "paper": 0.00101 / 0.6,  # kg PM2.5 eq / kg paper = 0.001683
+    "ldpe":  0.00225 / 1.5,   # kg PM2.5 eq / kg LDPE  = 0.001500
+    "paper": 0.00101 / 0.6,   # kg PM2.5 eq / kg paper = 0.001683
 }
 
-# Fossil Resource Scarcity: dominan dari LDPE 
-# Dari hasil openLCA 2.83815 kg oil eq dengan LDPE 1.5 kg → estimasi faktor
+# Fossil Resource Scarcity — dominan LDPE (plastik berbasis fosil)
 F_FRS = {
-    "ldpe":  2.83815 * 0.85 / 1.5,  # ~80-85% dari FRS berasal dari LDPE
+    "ldpe":  2.83815 * 0.85 / 1.5,
     "paper": 2.83815 * 0.15 / 0.6,
 }
 
-# Land Use: dominan dari paper/label karton
+# Land Use — dominan paper (butuh lahan untuk produksi kertas)
 F_LU = {
-    "paper": 0.89185 / 0.6,   # m2a crop eq / kg paper = 1.48642
+    "paper": 0.89185 / 0.6,   # m²a crop eq / kg paper = 1.48642
     "ldpe":  0.0,
 }
 
-# Terrestrial Acidification: dari emisi SO2 proses produksi
+# Ionizing Radiation — dari konsumsi listrik
+F_IR = {
+    "listrik": 0.62918 / 42.0,  # kBq Co-60 eq / kWh = 0.014980
+}
+
+# Terrestrial Acidification
 F_TA = {
     "ldpe":  0.00839 * 0.6 / 1.5,
     "paper": 0.00839 * 0.4 / 0.6,
@@ -114,11 +123,6 @@ F_HNCT = {
 F_TE = {
     "ldpe":  6.05257 * 0.4 / 1.5,
     "paper": 6.05257 * 0.6 / 0.6,
-}
-
-# Ionizing radiation (dari listrik/energi)
-F_IR = {
-    "listrik": 0.62918 / 42.0,  # kBq Co-60 eq / kWh
 }
 
 # Ozone formation
@@ -180,24 +184,25 @@ F_WC = {
 }
 
 
-# FUNGSI PERHITUNGAN 
-def hitung_lca(co2, ldpe, paper, listrik, kain, benang, kaos, perca):
+# ─── FUNGSI PERHITUNGAN ───────────────────────────────────────────────────────
+def hitung_lca(listrik, ldpe, paper, kain, benang, kaos, perca):
     """
-    Langkah 10: GW = CO2_direct + (LDPE x F_LDPE_GW) + (Paper x F_PAPER_GW)
-    Langkah 11-12: Impact_X = sum(input_i x faktor_i) per kategori
+    Langkah 10: CO2 = listrik × F_EMISI_LISTRIK (0.80 kg CO₂eq/kWh)
+                GW  = CO2 + (LDPE × F_LDPE_GW) + (Paper × F_PAPER_GW)
+    Langkah 11-12: Impact_X = Σ(input_i × faktor_i) per kategori
     """
 
-    # Langkah 10 – Global Warming (eksak dari faktor BAFU)
-    gw = (co2 * F_GW["co2_direct"]) + (ldpe * F_GW["ldpe"]) + (paper * F_GW["paper"])
+    co2_dari_listrik = listrik * F_EMISI_LISTRIK
 
-    # Langkah 12 – Semua kategori lain (murni perhitungan)
+    gw = co2_dari_listrik + (ldpe * F_GW["ldpe"]) + (paper * F_GW["paper"])
+
     fpm  = (ldpe * F_FPM["ldpe"])  + (paper * F_FPM["paper"])
     frs  = (ldpe * F_FRS["ldpe"])  + (paper * F_FRS["paper"])
-    lu   = (paper * F_LU["paper"]) + (ldpe * F_LU["ldpe"])
+    lu   = (paper * F_LU["paper"]) + (ldpe  * F_LU["ldpe"])
+    ir   = listrik * F_IR["listrik"]
     ta   = (ldpe * F_TA["ldpe"])   + (paper * F_TA["paper"])
     hnct = (ldpe * F_HNCT["ldpe"]) + (paper * F_HNCT["paper"])
     te   = (ldpe * F_TE["ldpe"])   + (paper * F_TE["paper"])
-    ir   = listrik * F_IR["listrik"]
     ot   = (ldpe * F_OT["ldpe"])   + (paper * F_OT["paper"])
     oh   = (ldpe * F_OH["ldpe"])   + (paper * F_OH["paper"])
     fe   = (ldpe * F_FE["ldpe"])   + (paper * F_FE["paper"])
@@ -231,40 +236,62 @@ def hitung_lca(co2, ldpe, paper, listrik, kain, benang, kaos, perca):
     ]
 
     contrib = [
-        {"label": "Direct CO₂ (Awesam)", "val": co2 * F_GW["co2_direct"], "pct": co2/gw*100 if gw else 0,              "color": "#E24B4A"},
-        {"label": "Packaging LDPE",      "val": ldpe * F_GW["ldpe"],       "pct": ldpe*F_GW["ldpe"]/gw*100 if gw else 0,"color": "#1a73e8"},
-        {"label": "Paper / label karton","val": paper * F_GW["paper"],     "pct": paper*F_GW["paper"]/gw*100 if gw else 0,"color": "#137333"},
+        {
+            "label": "Listrik PLN (Indonesia)",
+            "val":   co2_dari_listrik,
+            "pct":   co2_dari_listrik / gw * 100 if gw else 0,
+            "color": "#E24B4A",
+        },
+        {
+            "label": "Packaging LDPE",
+            "val":   ldpe * F_GW["ldpe"],
+            "pct":   ldpe * F_GW["ldpe"] / gw * 100 if gw else 0,
+            "color": "#1a73e8",
+        },
+        {
+            "label": "Paper / label karton",
+            "val":   paper * F_GW["paper"],
+            "pct":   paper * F_GW["paper"] / gw * 100 if gw else 0,
+            "color": "#137333",
+        },
     ]
 
-    return results, contrib, gw
+    return results, contrib, gw, co2_dari_listrik
 
 
-# SIDEBAR 
+# ─── SIDEBAR ─────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("### 🌿 Mini openLCA")
     st.markdown("**Awesam** · Kelompok 4")
     st.divider()
 
     st.markdown('<p class="sidebar-header">📦 Input flows</p>', unsafe_allow_html=True)
-    kain    = st.number_input("Kain Katun (kg)",  step=1.0,  format="%.1f")
-    benang  = st.number_input("Benang Jahit (kg)",   step=0.1,  format="%.1f")
-    listrik = st.number_input("Listrik (kWh)",  step=1.0,  format="%.1f")
-    ldpe    = st.number_input("Packaging LDPE (kg)",   step=0.1,  format="%.2f")
-    paper   = st.number_input("Label Karton / Paper (kg)",   step=0.05, format="%.2f")
+    kain    = st.number_input("Kain Katun (kg)",              value=75.0, step=1.0,  format="%.1f")
+    benang  = st.number_input("Benang Jahit (kg)",             value=1.5,  step=0.1,  format="%.1f")
+    listrik = st.number_input("Listrik (kWh)",                 value=42.0, step=1.0,  format="%.1f")
+    ldpe    = st.number_input("Packaging LDPE (kg)",           value=1.5,  step=0.1,  format="%.2f")
+    paper   = st.number_input("Label Karton / Paper (kg)",     value=0.6,  step=0.05, format="%.2f")
 
     st.divider()
     st.markdown('<p class="sidebar-header">📤 Output flows</p>', unsafe_allow_html=True)
-    kaos    = st.number_input("Kaos Jadi (unit)",   step=10)
-    co2_in  = st.number_input("Emisi CO₂ Direct (kg)",  step=0.1,  format="%.1f")
-    perca   = st.number_input("Kain Perca / Waste (kg)",   step=0.1,  format="%.1f")
+    kaos    = st.number_input("Kaos Jadi (unit)",              value=300,  step=10)
+    perca   = st.number_input("Kain Perca / Waste (kg)",       value=7.5,  step=0.1,  format="%.1f")
+
+    st.divider()
+    st.markdown("""
+    <div style="font-size:11px;color:#888">
+    Faktor emisi listrik: <b>0.80 kg CO₂eq/kWh</b><br>
+    Sumber: Faktor Emisi PLN Indonesia<br>
+    Metode: ReCiPe 2016 Midpoint (H)<br>
+    Batas sistem: Gate-to-gate
+    </div>""", unsafe_allow_html=True)
 
 
+# ─── HITUNG ──────────────────────────────────────────────────────────────────
+results, contrib, gw_total, co2_listrik = hitung_lca(listrik, ldpe, paper, kain, benang, kaos, perca)
 
-# HITUNG 
-results, contrib, gw_total = hitung_lca(co2_in, ldpe, paper, listrik, kain, benang, kaos, perca)
 
-
-# HEADER 
+# ─── HEADER ──────────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="main-header">
   <h1>🌿 Proses Produksi Kaos </h1>
@@ -281,19 +308,20 @@ tab1, tab2, tab3, tab4 = st.tabs([
 ])
 
 
-
+# ═══════════════════════════════════════════════════════════════════════════
 # TAB 1 — INPUTS / OUTPUTS
+# ═══════════════════════════════════════════════════════════════════════════
 with tab1:
     col_in, col_out = st.columns(2)
 
     with col_in:
         st.markdown('<div class="panel"><div class="panel-title">▼ Input flows</div>', unsafe_allow_html=True)
         df_in = pd.DataFrame([
-            {"Flow": "Kain Katun", "Amount": kain,    "Unit": "kg"},
-            {"Flow": "Benang Jahit", "Amount": benang,  "Unit": "kg"},
-            {"Flow": "Listrik", "Amount": listrik, "Unit": "kWh"},
-            {"Flow": "Packaging film, LDPE", "Amount": ldpe,    "Unit": "kg"},
-            {"Flow": "Paper, woodfree coated", "Amount": paper,   "Unit": "kg"},
+            {"Flow": "Kain Katun",             "Amount": kain,    "Unit": "kg"},
+            {"Flow": "Benang Jahit",            "Amount": benang,  "Unit": "kg"},
+            {"Flow": "Listrik (PLN Indonesia)", "Amount": listrik, "Unit": "kWh"},
+            {"Flow": "Packaging film, LDPE",   "Amount": ldpe,    "Unit": "kg"},
+            {"Flow": "Paper, woodfree coated",  "Amount": paper,   "Unit": "kg"},
         ])
         st.dataframe(df_in, use_container_width=True, hide_index=True,
                      column_config={"Amount": st.column_config.NumberColumn(format="%.2f")})
@@ -302,47 +330,51 @@ with tab1:
     with col_out:
         st.markdown('<div class="panel"><div class="panel-title">▼ Output flows</div>', unsafe_allow_html=True)
         df_out = pd.DataFrame([
-            {"Flow": "Kaos Jadi", "Amount": float(kaos),  "Unit": "item(s)"},
-            {"Flow": "Kain Perca", "Amount": perca,         "Unit": "kg"},
-            {"Flow": "Carbon dioxide, fossil", "Amount": co2_in,        "Unit": "kg"},
+            {"Flow": "Kaos Jadi",                        "Amount": float(kaos),   "Unit": "item(s)"},
+            {"Flow": "Kain Perca",                       "Amount": perca,          "Unit": "kg"},
+            {"Flow": "CO₂ dari listrik", "Amount": co2_listrik, "Unit": "kg CO₂ eq"},
         ])
         st.dataframe(df_out, use_container_width=True, hide_index=True,
-                     column_config={"Amount": st.column_config.NumberColumn(format="%.2f")})
+                     column_config={"Amount": st.column_config.NumberColumn(format="%.4f")})
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # Ringkasan inventori
+
+    st.divider()
     total_input_mass = kain + benang + ldpe + paper
-    efisiensi = (1 - perca / kain) * 100 if kain > 0 else 0
-    co2_per_unit = co2_in / kaos if kaos > 0 else 0
+    efisiensi        = (1 - perca / kain) * 100 if kain > 0 else 0
+    co2_per_unit     = co2_listrik / kaos if kaos > 0 else 0
+    gw_per_unit      = gw_total / kaos if kaos > 0 else 0
 
-    st.divider()
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Total mass input",    f"{total_input_mass:.1f} kg")
-    c2.metric("Energi listrik",      f"{listrik:.1f} kWh")
-    c3.metric("Efisiensi material",  f"{efisiensi:.1f}%")
-    c4.metric("CO₂ per unit kaos",   f"{co2_per_unit:.4f} kg/unit")
+    c1.metric("Total mass input",    "{:.1f} kg".format(total_input_mass))
+    c2.metric("Energi listrik",      "{:.1f} kWh".format(listrik))
+    c3.metric("Efisiensi material",  "{:.1f}%".format(efisiensi))
+    c4.metric("GW per unit kaos",    "{:.4f} kg CO₂eq".format(gw_per_unit))
 
+
+# ═══════════════════════════════════════════════════════════════════════════
 # TAB 2 — IMPACT ANALYSIS
+# ═══════════════════════════════════════════════════════════════════════════
 with tab2:
-    frs_val  = next(r for r in results if r["name"] == "Fossil resource scarcity")["val"]
-    lu_val   = next(r for r in results if r["name"] == "Land use")["val"]
-    fpm_val  = next(r for r in results if r["name"] == "Fine particulate matter formation")["val"]
+    frs_val = next(r for r in results if r["name"] == "Fossil resource scarcity")["val"]
+    lu_val  = next(r for r in results if r["name"] == "Land use")["val"]
+    fpm_val = next(r for r in results if r["name"] == "Fine particulate matter formation")["val"]
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("🌡️ Global Warming",          f"{gw_total:.5f}",  "kg CO₂ eq")
-    c2.metric("🛢️ Fossil Resource Scarcity", f"{frs_val:.5f}",   "kg oil eq")
-    c3.metric("🌱 Land Use",                f"{lu_val:.5f}",    "m²a crop eq")
-    c4.metric("💨 Fine Particulate Matter",  f"{fpm_val:.5f}",   "kg PM2.5 eq")
+    c1.metric("🌡️ Global Warming",           "{:.5f}".format(gw_total),  "kg CO₂ eq")
+    c2.metric("🛢️ Fossil Resource Scarcity",  "{:.5f}".format(frs_val),   "kg oil eq")
+    c3.metric("🌱 Land Use",                 "{:.5f}".format(lu_val),    "m²a crop eq")
+    c4.metric("💨 Fine Particulate Matter",   "{:.5f}".format(fpm_val),   "kg PM2.5 eq")
 
     st.divider()
-    st.markdown("**Impact analysis**")
+    st.markdown("**Impact analysis — ReCiPe 2016 Midpoint (H)**")
 
     def fmt(v):
-        if abs(v) < 1e-6: return "{:.4e}".format(v)
+        if abs(v) < 1e-6:  return "{:.4e}".format(v)
         if abs(v) < 0.001: return "{:.6f}".format(v)
         return "{:.5f}".format(v)
 
-    max_val = max(abs(r["val"]) for r in results)
+    max_val   = max(abs(r["val"]) for r in results)
     rows_html = ""
     for r in results:
         bar_w   = int(abs(r["val"]) / max_val * 100) if max_val > 0 else 0
@@ -375,9 +407,11 @@ with tab2:
 
 
 
+# ═══════════════════════════════════════════════════════════════════════════
 # TAB 3 — CONTRIBUTION TREE
+# ═══════════════════════════════════════════════════════════════════════════
 with tab3:
-    st.markdown("**Contribution tree - Global Warming**")
+    st.markdown("**Contribution tree — Global Warming**")
     st.selectbox("Impact category", ["Global warming"], key="ct_cat")
 
     bar_segs = "".join([
@@ -387,7 +421,8 @@ with tab3:
         for c in contrib
     ])
     legend_items = "".join([
-        '<span><span class="legend-dot" style="background:{color}"></span>{label} <strong>{pct:.2f}%</strong> ({val:.5f} kg CO₂ eq)</span>'.format(
+        '<span><span class="legend-dot" style="background:{color}"></span>'
+        '{label} <strong>{pct:.2f}%</strong> ({val:.5f} kg CO₂ eq)</span>'.format(
             color=c["color"], label=c["label"], pct=c["pct"], val=c["val"]
         )
         for c in contrib
@@ -401,15 +436,15 @@ with tab3:
     </div>
     """.format(gw=gw_total, bar=bar_segs, legend=legend_items), unsafe_allow_html=True)
 
-    rows = [
-        {"Kontribusi": "100.00%",
-         "Process": "▼ Proses Produksi Kaos Awesam",
-         "Required amount": "{} item(s)".format(kaos),
-         "Total result (kg CO₂ eq)": "{:.5f}".format(gw_total)},
-    ]
+    rows = [{
+        "Kontribusi": "100.00%",
+        "Process": "▼ Proses Produksi Kaos Awesam",
+        "Required amount": "{} item(s)".format(kaos),
+        "Total result (kg CO₂ eq)": "{:.5f}".format(gw_total),
+    }]
     for c in contrib:
-        if "Direct" in c["label"]:
-            amount = "{:.2f} kg CO₂".format(co2_in)
+        if "Listrik" in c["label"]:
+            amount = "{:.1f} kWh × 0.80 kg CO₂eq/kWh".format(listrik)
         elif "LDPE" in c["label"]:
             amount = "{:.2f} kg LDPE".format(ldpe)
         else:
@@ -423,7 +458,18 @@ with tab3:
 
     st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
+    st.markdown("""
+    <div class="note-box">
+    ℹ️ Faktor karakterisasi Global Warming:
+    Listrik PLN = 0.80 kg CO₂eq/kWh ·
+    LDPE = {f_ldpe:.5f} kg CO₂eq/kg ·
+    Paper = {f_paper:.5f} kg CO₂eq/kg
+    </div>""".format(f_ldpe=F_GW["ldpe"], f_paper=F_GW["paper"]), unsafe_allow_html=True)
+
+
+# ═══════════════════════════════════════════════════════════════════════════
 # TAB 4 — GRAFIK
+# ═══════════════════════════════════════════════════════════════════════════
 with tab4:
     col_g1, col_g2 = st.columns(2)
 
