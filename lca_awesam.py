@@ -76,7 +76,7 @@ section[data-testid="stSidebar"] { background: #f1f3f4; }
 F_EMISI_LISTRIK = 0.80  # kg CO₂ eq / kWh (Faktor Emisi Listrik Indonesia)
 
 # Global Warming
-# - Listrik: dihitung dari faktor emisi PLN Indonesia
+# - Listrik: dihitung dari faktor emisi 
 # - LDPE & Paper: reverse-engineered dari contribution tree openLCA 2.6.1
 F_GW = {
     "listrik": F_EMISI_LISTRIK,   # kg CO₂ eq / kWh
@@ -237,7 +237,7 @@ def hitung_lca(listrik, ldpe, paper, kain, benang, kaos, perca):
 
     contrib = [
         {
-            "label": "Listrik PLN (Indonesia)",
+            "label": "Listrik",
             "val":   co2_dari_listrik,
             "pct":   co2_dari_listrik / gw * 100 if gw else 0,
             "color": "#E24B4A",
@@ -308,7 +308,7 @@ with tab1:
         df_in = pd.DataFrame([
             {"Flow": "Kain Katun",             "Amount": kain,    "Unit": "kg"},
             {"Flow": "Benang Jahit",            "Amount": benang,  "Unit": "kg"},
-            {"Flow": "Listrik (PLN Indonesia)", "Amount": listrik, "Unit": "kWh"},
+            {"Flow": "Listrik", "Amount": listrik, "Unit": "kWh"},
             {"Flow": "Packaging film, LDPE",   "Amount": ldpe,    "Unit": "kg"},
             {"Flow": "Paper, woodfree coated",  "Amount": paper,   "Unit": "kg"},
         ])
@@ -446,7 +446,7 @@ with tab3:
     st.markdown("""
     <div class="note-box">
     ℹ️ Faktor karakterisasi Global Warming:
-    Listrik PLN = 0.80 kg CO₂eq/kWh ·
+    Listrik = 0.80 kg CO₂eq/kWh ·
     LDPE = {f_ldpe:.5f} kg CO₂eq/kg ·
     Paper = {f_paper:.5f} kg CO₂eq/kg
     </div>""".format(f_ldpe=F_GW["ldpe"], f_paper=F_GW["paper"]), unsafe_allow_html=True)
