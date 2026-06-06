@@ -277,15 +277,6 @@ with st.sidebar:
     kaos    = st.number_input("Kaos Jadi (unit)",              value=300,  step=10)
     perca   = st.number_input("Kain Perca / Waste (kg)",       value=7.5,  step=0.1,  format="%.1f")
 
-    st.divider()
-    st.markdown("""
-    <div style="font-size:11px;color:#888">
-    Faktor emisi listrik: <b>0.80 kg CO₂eq/kWh</b><br>
-    Sumber: Faktor Emisi PLN Indonesia<br>
-    Metode: ReCiPe 2016 Midpoint (H)<br>
-    Batas sistem: Gate-to-gate
-    </div>""", unsafe_allow_html=True)
-
 
 # ─── HITUNG ──────────────────────────────────────────────────────────────────
 results, contrib, gw_total, co2_listrik = hitung_lca(listrik, ldpe, paper, kain, benang, kaos, perca)
