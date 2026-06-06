@@ -299,9 +299,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
 ])
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # TAB 1 — INPUTS / OUTPUTS
-# ═══════════════════════════════════════════════════════════════════════════
 with tab1:
     col_in, col_out = st.columns(2)
 
@@ -343,9 +341,7 @@ with tab1:
     c4.metric("GW per unit kaos",    "{:.4f} kg CO₂eq".format(gw_per_unit))
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # TAB 2 — IMPACT ANALYSIS
-# ═══════════════════════════════════════════════════════════════════════════
 with tab2:
     frs_val = next(r for r in results if r["name"] == "Fossil resource scarcity")["val"]
     lu_val  = next(r for r in results if r["name"] == "Land use")["val"]
@@ -398,9 +394,7 @@ with tab2:
 
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # TAB 3 — CONTRIBUTION TREE
-# ═══════════════════════════════════════════════════════════════════════════
 with tab3:
     st.markdown("**Contribution tree — Global Warming**")
     st.selectbox("Impact category", ["Global warming"], key="ct_cat")
@@ -458,9 +452,7 @@ with tab3:
     </div>""".format(f_ldpe=F_GW["ldpe"], f_paper=F_GW["paper"]), unsafe_allow_html=True)
 
 
-# ═══════════════════════════════════════════════════════════════════════════
 # TAB 4 — GRAFIK
-# ═══════════════════════════════════════════════════════════════════════════
 with tab4:
     col_g1, col_g2 = st.columns(2)
 
