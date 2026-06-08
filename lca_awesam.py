@@ -354,7 +354,7 @@ with tab2:
     c4.metric("💨 Fine Particulate Matter",   "{:.5f}".format(fpm_val),   "kg PM2.5 eq")
 
     st.divider()
-    st.markdown("**Impact analysis — ReCiPe 2016 Midpoint (H)**")
+    st.markdown("**Impact analysis**")
 
     def fmt(v):
         if abs(v) < 1e-6:  return "{:.4e}".format(v)
